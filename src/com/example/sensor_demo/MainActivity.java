@@ -1,4 +1,4 @@
-package com.example.gps_demo;
+package com.example.sensor_demo;
 
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
 
 	private LocationManager mLocationManager;
 
-	private static final String TAG = "GPS-DEMO";
+	private static final String TAG = "SENSOR-DEMO";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
