@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Criteria;
 import android.location.GpsSatellite;
@@ -23,12 +25,27 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements SensorEventListener {
 
+	/*
+	 * Android Sensors
+	 * Package:	android.hardware
+	 * Classes:	SensorManager	- android service
+	 * 			Sensor			- specific sensor
+	 * 			SensorEvent		- specific event of the sensor (data)
+	 * 
+	 * 1	setup
+	 * 2	processing event
+	 * 3	cleanup
+	 * 
+	 */
+	
+	
 	private EditText editText;
 	private TextView logText;
 
-	private LocationManager mLocationManager;
+	private LocationManager mLocationManager = null;
+	private SensorManager sensorManager = null;
 
 	private static final String TAG = "SENSOR-DEMO";
 
@@ -41,6 +58,12 @@ public class MainActivity extends Activity {
 		logText = (TextView)findViewById(R.id.logText);
 
 		mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+		sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+		
+		// List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL);
+		// sensorManager.registerListener(listener, sensors)
+		
+		
 
 		/*
 		 
@@ -267,12 +290,43 @@ public class MainActivity extends Activity {
 		return true;
 	}
 	
+	
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		
+		// sensorManager.unregisterListener(listener);
+	}
+
+	@Override
+	protected void onStop() {
+		// TODO Auto-generated method stub
+		super.onStop();
+		
+		// sensorManager.unregisterListener(listener);
+	}
+
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
 
 		mLocationManager.removeUpdates(locationListener);
+	}
+
+	@Override
+	public void onAccuracyChanged(Sensor arg0, int arg1) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onSensorChanged(SensorEvent evnet) {
+		// TODO Auto-generated method stub
+		
+		// evnet.
 	}
 
 }
