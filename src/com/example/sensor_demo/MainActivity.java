@@ -186,6 +186,32 @@ public class MainActivity extends Activity {
 		return criteria;
 	}
 	
+	
+	/**
+	 * From A31 android4.4 Sensor.java
+	 * 		TYPE_ALL								-1
+	 * 
+	 * 		TYPE_ACCELEROMETER						1
+	 *		TYPE_MAGNETIC_FIELD						2
+	 *		TYPE_ORIENTATION						3
+	 *		TYPE_GYROSCOPE							4
+	 *		TYPE_LIGHT								5
+	 *		TYPE_PRESSURE							6
+	 *		TYPE_TEMPERATURE						7
+	 *		TYPE_PROXIMITY							8
+	 *		TYPE_GRAVITY							9
+	 *		TYPE_LINEAR_ACCELERATION				10
+	 *		TYPE_ROTATION_VECTOR					11
+	 *		TYPE_RELATIVE_HUMIDITY					12
+	 *		TYPE_AMBIENT_TEMPERATURE				13
+	 *		TYPE_MAGNETIC_FIELD_UNCALIBRATED		14
+	 *		TYPE_GAME_ROTATION_VECTOR				15
+	 *		TYPE_GYROSCOPE_UNCALIBRATED				16
+	 *		TYPE_SIGNIFICANT_MOTION					17
+	 *		TYPE_STEP_DETECTOR						18
+	 *		TYPE_STEP_COUNTER						19
+	 *		TYPE_GEOMAGNETIC_ROTATION_VECTOR		20
+	 */
 	private void printAllSensors(){
 		SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		List<Sensor> allSensor = sensorManager.getSensorList(Sensor.TYPE_ALL);
@@ -198,30 +224,35 @@ public class MainActivity extends Activity {
 								"\n" + "device vendor = " + s.getVendor() + "\n\n";
 			
 			switch (s.getType()) {
-			case Sensor.TYPE_ACCELEROMETER:
+			case Sensor.TYPE_ACCELEROMETER:		// 加速度传感器
 				logText.setText(logText.getText().toString() + s.getType() + " ACCELEROMETER" + sensorInfo);
 				break;
-			case Sensor.TYPE_GYROSCOPE:
+			case Sensor.TYPE_GRAVITY:			// 重力传感器
 				logText.setText(logText.getText().toString() + s.getType() + " GYROSCOPE" + sensorInfo);
 				break;
-			case Sensor.TYPE_LIGHT:
+			case Sensor.TYPE_GYROSCOPE:			// 陀螺仪传感器
+				logText.setText(logText.getText().toString() + s.getType() + " GYROSCOPE" + sensorInfo);
+				break;
+			case Sensor.TYPE_LIGHT:				// 光线传感器
 				logText.setText(logText.getText().toString() + s.getType() + " LIGHT" + sensorInfo);
 				break;
-			case Sensor.TYPE_MAGNETIC_FIELD:
+			case Sensor.TYPE_MAGNETIC_FIELD:	// 磁力传感器
 				logText.setText(logText.getText().toString() + s.getType() + " MAGNETIC_FIELD" + sensorInfo);
 				break;
 			case Sensor.TYPE_ORIENTATION:
 				logText.setText(logText.getText().toString() + s.getType() + " ORIENTATION" + sensorInfo);
 				break;
-			case Sensor.TYPE_PRESSURE:
+			case Sensor.TYPE_PRESSURE:			// 压力传感器
 				logText.setText(logText.getText().toString() + s.getType() + " PRESSURE" + sensorInfo);
 				break;
-			case Sensor.TYPE_PROXIMITY:
+			case Sensor.TYPE_PROXIMITY:			// 距离传感器
 				logText.setText(logText.getText().toString() + s.getType() + " PROXIMITY" + sensorInfo);
 				break;
-			case Sensor.TYPE_TEMPERATURE:
+			case Sensor.TYPE_TEMPERATURE:		// 温度传感器
 				logText.setText(logText.getText().toString() + s.getType() + " TEMPERATURE" + sensorInfo);
 				break;
+			// HUMIDITY  湿度传感器
+			// ROTATION	 方向传感器
 			default:
 				logText.setText("Unkown Sensor ...");
 				break;
