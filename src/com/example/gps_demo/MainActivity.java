@@ -1,7 +1,10 @@
 package com.example.gps_demo;
 
 import java.util.Iterator;
+import java.util.List;
 
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.location.Criteria;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
@@ -14,6 +17,7 @@ import android.provider.Settings;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -38,7 +42,12 @@ public class MainActivity extends Activity {
 
 		mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 
-		if(mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+		/*
+		 
+		mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+		mLocationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER);
+
+		if(!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 			Toast.makeText(this, "Please open GPS ...", Toast.LENGTH_SHORT).show();
 			
 			Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -46,12 +55,27 @@ public class MainActivity extends Activity {
 			return;
 		}
 		
-		String bestProvider = mLocationManager.getBestProvider(getCriteria(), true);
-		Location location = mLocationManager.getLastKnownLocation(bestProvider);
-		updateView(location);
+		*/
 		
-		mLocationManager.addGpsStatusListener(gpsStatusListener);
-		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
+		
+		/*
+		String bestProvider = mLocationManager.getBestProvider(getCriteria(), true);
+		if (bestProvider != null) {
+			Location location = mLocationManager.getLastKnownLocation(bestProvider);
+			updateView(location);
+			
+			mLocationManager.addGpsStatusListener(gpsStatusListener);
+			
+			//mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
+			mLocationManager.requestLocationUpdates(bestProvider, 1000, 1, locationListener);
+		} else {
+			Log.i(TAG, "bestProvider is null ...");
+		}
+		*/
+		
+		// For test
+		printAllSensors();
+		
 	}
 	
 	private LocationListener locationListener = new LocationListener() {
@@ -61,16 +85,16 @@ public class MainActivity extends Activity {
 			// TODO Auto-generated method stub
 			switch (status) {
 			case LocationProvider.AVAILABLE:
-				logText.setText("LocationProvider.AVAILABLE");
+				setLogText("--- LocationProvider.AVAILABLE");
 				break;
 			case LocationProvider.OUT_OF_SERVICE:
-				logText.setText("LocationProvider.OUT_OF_SERVICE");
+				setLogText("--- LocationProvider.OUT_OF_SERVICE");
 				break;
 			case LocationProvider.TEMPORARILY_UNAVAILABLE:
-				logText.setText("LocationProvider.TEMPORARILY_UNAVAILABLE");
+				setLogText("--- LocationProvider.TEMPORARILY_UNAVAILABLE");
 				break;
 			default:
-				logText.setText("unkown status ... ");
+				setLogText("--- unkown status ... ");
 				break;
 			}
 		}
@@ -79,18 +103,21 @@ public class MainActivity extends Activity {
 		public void onProviderEnabled(String provider) {
 			// TODO Auto-generated method stub
 			Location location = mLocationManager.getLastKnownLocation(provider);
+			setLogText("--- onProviderEnabled");
 			updateView(location);
 		}
 		
 		@Override
 		public void onProviderDisabled(String arg0) {
 			// TODO Auto-generated method stub
+			setLogText("--- onProviderDisabled");
 			updateView(null);
 		}
 		
 		@Override
 		public void onLocationChanged(Location location) {
 			// TODO Auto-generated method stub
+			setLogText("--- onLocationChanged");
 			updateView(location);
 		}
 	};
@@ -102,10 +129,10 @@ public class MainActivity extends Activity {
 			// TODO Auto-generated method stub
 			switch (event) {
 			case GpsStatus.GPS_EVENT_FIRST_FIX:
-				logText.setText("event: GPS first fix");
+				setLogText("event: GPS first fix");
 				break;
 			case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-				logText.setText("event: GPS satellite status");
+				setLogText("event: GPS satellite status");
 				
 				GpsStatus gpsStatus = mLocationManager.getGpsStatus(null);
 				int maxSatellites = gpsStatus.getMaxSatellites();
@@ -115,28 +142,32 @@ public class MainActivity extends Activity {
 					GpsSatellite s = iterator.next();
 					count++;
 				}
-				logText.setText("Search " + count + " GpsSatellite");
+				setLogText("Search " + count + " GpsSatellite");
 				break;
 			case GpsStatus.GPS_EVENT_STARTED:
-				logText.setText("event: GPS started");
+				setLogText("event: GPS started");
 				break;
 			case GpsStatus.GPS_EVENT_STOPPED:
-				logText.setText("event: GPS stopped");
+				setLogText("event: GPS stopped");
 				break;
 			default:
-				logText.setText("No match ...");
+				setLogText("No match ...");
 				break;
 			}
 		}
 	};
+	
+	private void setLogText(String loginfo) {
+		logText.setText(loginfo + "\n=====================================\n" + logText.getText());
+	}
 
 	private void updateView(Location location) {
 		if(location != null) {
 			editText.setText("Longitude = ");
 			editText.append(String.valueOf(location.getLongitude()));
-			editText.append("\n Latitude = ");
+			editText.append("\nLatitude = ");
 			editText.append(String.valueOf(location.getLatitude()));
-			editText.append("\n altitude = ");
+			editText.append("\naltitude = ");
 			editText.append(String.valueOf(location.getAltitude()));
 		} else {
 			editText.getEditableText().clear();
@@ -149,10 +180,53 @@ public class MainActivity extends Activity {
 		criteria.setSpeedRequired(false);
 		criteria.setCostAllowed(false);
 		criteria.setBearingRequired(false);
-		criteria.setAltitudeRequired(false);
+		criteria.setAltitudeRequired(true);
 		criteria.setPowerRequirement(Criteria.POWER_LOW);
 
 		return criteria;
+	}
+	
+	private void printAllSensors(){
+		SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+		List<Sensor> allSensor = sensorManager.getSensorList(Sensor.TYPE_ALL);
+		
+		logText.setText("Have " + allSensor.size() + " sensor \n\n");
+		
+		for(Sensor s : allSensor) {
+			String sensorInfo = "\n" + "device name = " + s.getName() +
+								"\n" + "device version = " + s.getVersion() +
+								"\n" + "device vendor = " + s.getVendor() + "\n\n";
+			
+			switch (s.getType()) {
+			case Sensor.TYPE_ACCELEROMETER:
+				logText.setText(logText.getText().toString() + s.getType() + " ACCELEROMETER" + sensorInfo);
+				break;
+			case Sensor.TYPE_GYROSCOPE:
+				logText.setText(logText.getText().toString() + s.getType() + " GYROSCOPE" + sensorInfo);
+				break;
+			case Sensor.TYPE_LIGHT:
+				logText.setText(logText.getText().toString() + s.getType() + " LIGHT" + sensorInfo);
+				break;
+			case Sensor.TYPE_MAGNETIC_FIELD:
+				logText.setText(logText.getText().toString() + s.getType() + " MAGNETIC_FIELD" + sensorInfo);
+				break;
+			case Sensor.TYPE_ORIENTATION:
+				logText.setText(logText.getText().toString() + s.getType() + " ORIENTATION" + sensorInfo);
+				break;
+			case Sensor.TYPE_PRESSURE:
+				logText.setText(logText.getText().toString() + s.getType() + " PRESSURE" + sensorInfo);
+				break;
+			case Sensor.TYPE_PROXIMITY:
+				logText.setText(logText.getText().toString() + s.getType() + " PROXIMITY" + sensorInfo);
+				break;
+			case Sensor.TYPE_TEMPERATURE:
+				logText.setText(logText.getText().toString() + s.getType() + " TEMPERATURE" + sensorInfo);
+				break;
+			default:
+				logText.setText("Unkown Sensor ...");
+				break;
+			}
+		}
 	}
 
 	@Override
