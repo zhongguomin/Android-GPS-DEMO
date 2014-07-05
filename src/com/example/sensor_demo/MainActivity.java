@@ -1,7 +1,10 @@
 package com.example.sensor_demo;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -17,15 +20,21 @@ import android.location.LocationProvider;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.app.Activity;
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements SensorEventListener {
+public class MainActivity extends ListActivity implements SensorEventListener {
 
 	/*
 	 * Android Sensors
@@ -48,17 +57,55 @@ public class MainActivity extends Activity implements SensorEventListener {
 	private SensorManager sensorManager = null;
 
 	private static final String TAG = "SENSOR-DEMO";
+	
+	private String[] sensorName = {"name_1", "name_2", "name_3"};
+	private String[] sensorType = {"type_1", "type_2", "type_3"};
+	private ListView sensorListView = null;
+	private ArrayList<Map<String, Object>> sensor = new ArrayList<Map<String, Object>>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		
+		// http://blog.csdn.net/xys289187120/article/details/6636139
+		sensorListView = getListView();
+		
+		int sensorNum = sensorName.length;
+		for (int i = 0; i < sensorNum; i++) {
+			Map<String, Object> item = new HashMap<String, Object>();
+			item.put("name", sensorName[i]);
+			item.put("type", sensorType[i]);
+			sensor.add(item);
+		}
+		
+		SimpleAdapter adapter = new SimpleAdapter(this, sensor, android.R.layout.simple_list_item_2, 
+				new String[]{"name", "type"}, new int[]{android.R.id.text1, android.R.id.text2});
+		
+		setListAdapter(adapter);
+		
+		sensorListView.setOnItemClickListener(new OnItemClickListener() {
 
-		editText = (EditText)findViewById(R.id.editText);
-		logText = (TextView)findViewById(R.id.logText);
+			@Override
+			public void onItemClick(AdapterView<?> adapterView, View view, 
+					int position, long id) {
+				// TODO Auto-generated method stub
+				Toast.makeText(MainActivity.this, "You Click " + sensorName[position] + "  " + sensorType[position], 
+						Toast.LENGTH_SHORT).show();
+			}
+			
+		});
+		
+		
+		
+		
+		
+		//setContentView(R.layout.activity_main);
 
-		mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-		sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+		//editText = (EditText)findViewById(R.id.editText);
+		//logText = (TextView)findViewById(R.id.logText);
+
+		//mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+		//sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		
 		// List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL);
 		// sensorManager.registerListener(listener, sensors)
@@ -95,9 +142,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 			Log.i(TAG, "bestProvider is null ...");
 		}
 		*/
-		
-		// For test
-		printAllSensors();
 		
 	}
 	
@@ -210,6 +254,10 @@ public class MainActivity extends Activity implements SensorEventListener {
 	}
 	
 	
+	private void setSensorListViewData() {
+		
+	}
+	
 	/**
 	 * From A31 android4.4 Sensor.java
 	 * 		TYPE_ALL								-1
@@ -235,10 +283,13 @@ public class MainActivity extends Activity implements SensorEventListener {
 	 *		TYPE_STEP_COUNTER						19
 	 *		TYPE_GEOMAGNETIC_ROTATION_VECTOR		20
 	 */
-	private void printAllSensors(){
+	private List<Sensor> getAllSensors(){
 		SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		List<Sensor> allSensor = sensorManager.getSensorList(Sensor.TYPE_ALL);
 		
+		return allSensor;
+		
+		/*
 		logText.setText("Have " + allSensor.size() + " sensor \n\n");
 		
 		for(Sensor s : allSensor) {
@@ -280,7 +331,10 @@ public class MainActivity extends Activity implements SensorEventListener {
 				logText.setText("Unkown Sensor ...");
 				break;
 			}
+			
 		}
+	
+		 */
 	}
 
 	@Override
