@@ -24,6 +24,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        
+        <activity android:name="com.example.sensor_demo.LocationActivity" />
+        <activity android:name="com.example.sensor_demo.AccelerometerActivity" />
+        <activity android:name="com.example.sensor_demo.MagneticFieldActivity" />
+        <activity android:name="com.example.sensor_demo.OrientationActivity" />
+        <activity android:name="com.example.sensor_demo.GyroscopeActivity" />
+        <activity android:name="com.example.sensor_demo.LightActivity" />
+        <activity android:name="com.example.sensor_demo.PressureActivity" />
+        <activity android:name="com.example.sensor_demo.TemperatureActivity" />
+        <activity android:name="com.example.sensor_demo.ProximityActivity" />
+        <activity android:name="com.example.sensor_demo.GravityActivity" />
     </application>
 
 </manifest>

@@ -14,11 +14,10 @@ public class GyroscopeActivity extends Activity {
 	
 	private SensorManager sensorManager = null;
 
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		
 		setContentView(R.layout.activity_gyroscope);
 		
 		sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
@@ -27,12 +26,9 @@ public class GyroscopeActivity extends Activity {
 										SensorManager.SENSOR_DELAY_NORMAL);
 	}
 	
-	
 	final SensorEventListener sensorEventListener = new SensorEventListener() {
-		
 		@Override
 		public void onSensorChanged(SensorEvent sensorEvent) {
-			// TODO Auto-generated method stub
 			if(sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
 				float x = sensorEvent.values[0];
 				float y = sensorEvent.values[1];
@@ -44,26 +40,19 @@ public class GyroscopeActivity extends Activity {
 		
 		@Override
 		public void onAccuracyChanged(Sensor arg0, int arg1) {
-			// TODO Auto-generated method stub
 			
 		}
 	};
 
 	@Override
 	protected void onDestroy() {
-		// TODO Auto-generated method stub
 		sensorManager.unregisterListener(sensorEventListener);
 		super.onDestroy();
 	}
 
-
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		sensorManager.unregisterListener(sensorEventListener);
 		super.onPause();
 	}
-	
-	
-
 }

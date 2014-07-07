@@ -2,339 +2,118 @@ package com.example.sensor_demo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Criteria;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.app.Activity;
+import android.R.integer;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends ListActivity implements SensorEventListener {
-
-	/*
-	 * Android Sensors
-	 * Package:	android.hardware
-	 * Classes:	SensorManager	- android service
-	 * 			Sensor			- specific sensor
-	 * 			SensorEvent		- specific event of the sensor (data)
-	 * 
-	 * 1	setup
-	 * 2	processing event
-	 * 3	cleanup
-	 * 
-	 */
-	
-	
-	private EditText editText;
-	private TextView logText;
-
-	private LocationManager mLocationManager = null;
-	private SensorManager sensorManager = null;
+public class MainActivity extends ListActivity {
 
 	private static final String TAG = "SENSOR-DEMO";
 	
-	private String[] sensorName = {"name_1", "name_2", "name_3"};
-	private String[] sensorType = {"type_1", "type_2", "type_3"};
 	private ListView sensorListView = null;
-	private ArrayList<Map<String, Object>> sensor = new ArrayList<Map<String, Object>>();
+	private ArrayList<Map<String, Object>> sensors = new ArrayList<Map<String, Object>>();
 
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		// http://blog.csdn.net/xys289187120/article/details/6636139
 		sensorListView = getListView();
+		initSensorListViewData();
 		
-		int sensorNum = sensorName.length;
-		for (int i = 0; i < sensorNum; i++) {
-			Map<String, Object> item = new HashMap<String, Object>();
-			item.put("name", sensorName[i]);
-			item.put("type", sensorType[i]);
-			sensor.add(item);
-		}
-		
-		SimpleAdapter adapter = new SimpleAdapter(this, sensor, android.R.layout.simple_list_item_2, 
-				new String[]{"name", "type"}, new int[]{android.R.id.text1, android.R.id.text2});
-		
+		SimpleAdapter adapter = new SimpleAdapter(this, sensors, R.layout.activity_main,
+				new String[]{"sensor_name", "sensor_type", "sensor_vendor", "sensor_version"}, 
+				new int[]{R.id.sensorNameText, R.id.sensorTypeText, R.id.sensorVendorText, R.id.sensorVersionText});
 		setListAdapter(adapter);
 		
 		sensorListView.setOnItemClickListener(new OnItemClickListener() {
-
 			@Override
 			public void onItemClick(AdapterView<?> adapterView, View view, 
 					int position, long id) {
-				// TODO Auto-generated method stub
-				Toast.makeText(MainActivity.this, "You Click " + sensorName[position] + "  " + sensorType[position], 
-						Toast.LENGTH_SHORT).show();
+				int sensorType = Integer.parseInt(sensors.get(position).get("sensor_type").toString());
+				handlerItemClickEvent(position, sensorType);
 			}
-			
 		});
-		
-		
-		
-		
-		
-		//setContentView(R.layout.activity_main);
-
-		//editText = (EditText)findViewById(R.id.editText);
-		//logText = (TextView)findViewById(R.id.logText);
-
-		//mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-		//sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
-		
-		// List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL);
-		// sensorManager.registerListener(listener, sensors)
-		
-		
-
-		/*
-		 
-		mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-		mLocationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER);
-
-		if(!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-			Toast.makeText(this, "Please open GPS ...", Toast.LENGTH_SHORT).show();
-			
-			Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-			startActivityForResult(intent, 0);
-			return;
-		}
-		
-		*/
-		
-		
-		/*
-		String bestProvider = mLocationManager.getBestProvider(getCriteria(), true);
-		if (bestProvider != null) {
-			Location location = mLocationManager.getLastKnownLocation(bestProvider);
-			updateView(location);
-			
-			mLocationManager.addGpsStatusListener(gpsStatusListener);
-			
-			//mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
-			mLocationManager.requestLocationUpdates(bestProvider, 1000, 1, locationListener);
-		} else {
-			Log.i(TAG, "bestProvider is null ...");
-		}
-		*/
-		
 	}
 	
-	private LocationListener locationListener = new LocationListener() {
-		
-		@Override
-		public void onStatusChanged(String provider, int status, Bundle extras) {
-			// TODO Auto-generated method stub
-			switch (status) {
-			case LocationProvider.AVAILABLE:
-				setLogText("--- LocationProvider.AVAILABLE");
-				break;
-			case LocationProvider.OUT_OF_SERVICE:
-				setLogText("--- LocationProvider.OUT_OF_SERVICE");
-				break;
-			case LocationProvider.TEMPORARILY_UNAVAILABLE:
-				setLogText("--- LocationProvider.TEMPORARILY_UNAVAILABLE");
-				break;
-			default:
-				setLogText("--- unkown status ... ");
-				break;
-			}
-		}
-		
-		@Override
-		public void onProviderEnabled(String provider) {
-			// TODO Auto-generated method stub
-			Location location = mLocationManager.getLastKnownLocation(provider);
-			setLogText("--- onProviderEnabled");
-			updateView(location);
-		}
-		
-		@Override
-		public void onProviderDisabled(String arg0) {
-			// TODO Auto-generated method stub
-			setLogText("--- onProviderDisabled");
-			updateView(null);
-		}
-		
-		@Override
-		public void onLocationChanged(Location location) {
-			// TODO Auto-generated method stub
-			setLogText("--- onLocationChanged");
-			updateView(location);
-		}
-	};
-
-	GpsStatus.Listener gpsStatusListener = new GpsStatus.Listener() {
-		
-		@Override
-		public void onGpsStatusChanged(int event) {
-			// TODO Auto-generated method stub
-			switch (event) {
-			case GpsStatus.GPS_EVENT_FIRST_FIX:
-				setLogText("event: GPS first fix");
-				break;
-			case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-				setLogText("event: GPS satellite status");
-				
-				GpsStatus gpsStatus = mLocationManager.getGpsStatus(null);
-				int maxSatellites = gpsStatus.getMaxSatellites();
-				Iterator<GpsSatellite> iterator = gpsStatus.getSatellites().iterator();
-				int count = 0;
-				while(iterator.hasNext() && count <= maxSatellites) {
-					GpsSatellite s = iterator.next();
-					count++;
-				}
-				setLogText("Search " + count + " GpsSatellite");
-				break;
-			case GpsStatus.GPS_EVENT_STARTED:
-				setLogText("event: GPS started");
-				break;
-			case GpsStatus.GPS_EVENT_STOPPED:
-				setLogText("event: GPS stopped");
-				break;
-			default:
-				setLogText("No match ...");
-				break;
-			}
-		}
-	};
-	
-	private void setLogText(String loginfo) {
-		logText.setText(loginfo + "\n=====================================\n" + logText.getText());
+	private void handlerItemClickEvent(int position, int sensorType) {
+		switch (sensorType) {
+		case Sensor.TYPE_ACCELEROMETER:
+			Intent accelerometer_intent = new Intent(MainActivity.this, AccelerometerActivity.class);
+			startActivity(accelerometer_intent);
+			break;
+		case Sensor.TYPE_MAGNETIC_FIELD:
+			Intent magneticField_intent = new Intent(MainActivity.this, MagneticFieldActivity.class);
+			startActivity(magneticField_intent);
+			break;
+		case Sensor.TYPE_ORIENTATION:
+			Intent orientation_intent = new Intent(MainActivity.this, OrientationActivity.class);
+			startActivity(orientation_intent);
+			break;
+		case Sensor.TYPE_GYROSCOPE:
+			Intent gyroscope_intent = new Intent(MainActivity.this, GyroscopeActivity.class);
+			startActivity(gyroscope_intent);
+			break;
+		case Sensor.TYPE_LIGHT:
+			Intent light_intent = new Intent(MainActivity.this, LightActivity.class);
+			startActivity(light_intent);
+			break;
+		case Sensor.TYPE_PRESSURE:
+			Intent pressure_intent = new Intent(MainActivity.this, PressureActivity.class);
+			startActivity(pressure_intent);
+			break;
+		case Sensor.TYPE_TEMPERATURE:
+			Intent temperature_intent = new Intent(MainActivity.this, TemperatureActivity.class);
+			startActivity(temperature_intent);
+			break;
+		case Sensor.TYPE_PROXIMITY:
+			Intent proximity_intent = new Intent(MainActivity.this, ProximityActivity.class);
+			startActivity(proximity_intent);
+			break;
+		case Sensor.TYPE_GRAVITY:
+			Intent gravity_intent = new Intent(MainActivity.this, GravityActivity.class);
+			startActivity(gravity_intent);
+			break;
+		default:
+			Toast.makeText(MainActivity.this, "Unkown Sensor Type ...", 
+					Toast.LENGTH_SHORT).show();					
+			break;
+		}	
 	}
 
-	private void updateView(Location location) {
-		if(location != null) {
-			editText.setText("Longitude = ");
-			editText.append(String.valueOf(location.getLongitude()));
-			editText.append("\nLatitude = ");
-			editText.append(String.valueOf(location.getLatitude()));
-			editText.append("\naltitude = ");
-			editText.append(String.valueOf(location.getAltitude()));
-		} else {
-			editText.getEditableText().clear();
+	private void initSensorListViewData() {
+		List<Sensor> sensorList = getAllSensors();
+		
+		for(Sensor s : sensorList) {
+			Map<String, Object> item = new HashMap<String, Object>();
+			item.put("sensor_name", s.getName());
+			item.put("sensor_type", s.getType());
+			item.put("sensor_vendor", s.getVendor());
+			item.put("sensor_version", s.getVersion());
+			sensors.add(item);
 		}
 	}
 
-	private Criteria getCriteria() {
-		Criteria criteria = new Criteria();
-		criteria.setAccuracy(Criteria.ACCURACY_FINE);
-		criteria.setSpeedRequired(false);
-		criteria.setCostAllowed(false);
-		criteria.setBearingRequired(false);
-		criteria.setAltitudeRequired(true);
-		criteria.setPowerRequirement(Criteria.POWER_LOW);
-
-		return criteria;
-	}
-	
-	
-	private void setSensorListViewData() {
-		
-	}
-	
-	/**
-	 * From A31 android4.4 Sensor.java
-	 * 		TYPE_ALL								-1
-	 * 
-	 * 		TYPE_ACCELEROMETER						1
-	 *		TYPE_MAGNETIC_FIELD						2
-	 *		TYPE_ORIENTATION						3
-	 *		TYPE_GYROSCOPE							4
-	 *		TYPE_LIGHT								5
-	 *		TYPE_PRESSURE							6
-	 *		TYPE_TEMPERATURE						7
-	 *		TYPE_PROXIMITY							8
-	 *		TYPE_GRAVITY							9
-	 *		TYPE_LINEAR_ACCELERATION				10
-	 *		TYPE_ROTATION_VECTOR					11
-	 *		TYPE_RELATIVE_HUMIDITY					12
-	 *		TYPE_AMBIENT_TEMPERATURE				13
-	 *		TYPE_MAGNETIC_FIELD_UNCALIBRATED		14
-	 *		TYPE_GAME_ROTATION_VECTOR				15
-	 *		TYPE_GYROSCOPE_UNCALIBRATED				16
-	 *		TYPE_SIGNIFICANT_MOTION					17
-	 *		TYPE_STEP_DETECTOR						18
-	 *		TYPE_STEP_COUNTER						19
-	 *		TYPE_GEOMAGNETIC_ROTATION_VECTOR		20
-	 */
 	private List<Sensor> getAllSensors(){
 		SensorManager sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
-		List<Sensor> allSensor = sensorManager.getSensorList(Sensor.TYPE_ALL);
+		List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL);
 		
-		return allSensor;
-		
-		/*
-		logText.setText("Have " + allSensor.size() + " sensor \n\n");
-		
-		for(Sensor s : allSensor) {
-			String sensorInfo = "\n" + "device name = " + s.getName() +
-								"\n" + "device version = " + s.getVersion() +
-								"\n" + "device vendor = " + s.getVendor() + "\n\n";
-			
-			switch (s.getType()) {
-			case Sensor.TYPE_ACCELEROMETER:		// 加速度传感器
-				logText.setText(logText.getText().toString() + s.getType() + " ACCELEROMETER" + sensorInfo);
-				break;
-			case Sensor.TYPE_GRAVITY:			// 重力传感器
-				logText.setText(logText.getText().toString() + s.getType() + " GYROSCOPE" + sensorInfo);
-				break;
-			case Sensor.TYPE_GYROSCOPE:			// 陀螺仪传感器
-				logText.setText(logText.getText().toString() + s.getType() + " GYROSCOPE" + sensorInfo);
-				break;
-			case Sensor.TYPE_LIGHT:				// 光线传感器
-				logText.setText(logText.getText().toString() + s.getType() + " LIGHT" + sensorInfo);
-				break;
-			case Sensor.TYPE_MAGNETIC_FIELD:	// 磁力传感器
-				logText.setText(logText.getText().toString() + s.getType() + " MAGNETIC_FIELD" + sensorInfo);
-				break;
-			case Sensor.TYPE_ORIENTATION:
-				logText.setText(logText.getText().toString() + s.getType() + " ORIENTATION" + sensorInfo);
-				break;
-			case Sensor.TYPE_PRESSURE:			// 压力传感器
-				logText.setText(logText.getText().toString() + s.getType() + " PRESSURE" + sensorInfo);
-				break;
-			case Sensor.TYPE_PROXIMITY:			// 距离传感器
-				logText.setText(logText.getText().toString() + s.getType() + " PROXIMITY" + sensorInfo);
-				break;
-			case Sensor.TYPE_TEMPERATURE:		// 温度传感器
-				logText.setText(logText.getText().toString() + s.getType() + " TEMPERATURE" + sensorInfo);
-				break;
-			// HUMIDITY  湿度传感器
-			// ROTATION	 方向传感器
-			default:
-				logText.setText("Unkown Sensor ...");
-				break;
-			}
-			
-		}
-	
-		 */
+		return sensorList;
 	}
 
 	@Override
@@ -343,44 +122,20 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-	
-	
-	
+
 	@Override
-	protected void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_location:
+			Intent intent = new Intent(MainActivity.this, LocationActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			Toast.makeText(MainActivity.this, "Unkown Optons Item ...", 
+					Toast.LENGTH_SHORT).show();	
+			break;
+		}
 		
-		// sensorManager.unregisterListener(listener);
+		return super.onOptionsItemSelected(item);
 	}
-
-	@Override
-	protected void onStop() {
-		// TODO Auto-generated method stub
-		super.onStop();
-		
-		// sensorManager.unregisterListener(listener);
-	}
-
-	@Override
-	protected void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-
-		mLocationManager.removeUpdates(locationListener);
-	}
-
-	@Override
-	public void onAccuracyChanged(Sensor arg0, int arg1) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSensorChanged(SensorEvent evnet) {
-		// TODO Auto-generated method stub
-		
-		// evnet.
-	}
-
 }
